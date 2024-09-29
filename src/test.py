@@ -21,7 +21,7 @@ options.multiplexing = 4
 gray=(100,100,100)
 black=(0,0,0)
 
-font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 20)
+font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 16)
 
 hit = Image.new("RGB", (16, 16))  # Can be larger than matrix if wanted!!
 draw = ImageDraw.Draw(hit)  # Declare Draw instance before prims
