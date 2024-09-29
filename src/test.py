@@ -12,15 +12,16 @@ from PIL import Image, ImageDraw, ImageFont
 options = RGBMatrixOptions()
 options.rows = 16
 options.cols = 32
-options.chain_length = 18 
-options.hardware_mapping = 'adafruit-hat'  # If you have an Adafruit HAT: 'adafruit-hat'
+options.chain_length = 6
+options.gpio_slowdown = 3
+options.parallel = 2
+#options.hardware_mapping = 'adafruit-hat'  # If you have an Adafruit HAT: 'adafruit-hat'
 options.multiplexing = 4
 
 gray=(100,100,100)
 black=(0,0,0)
 
 font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeMono.ttf", 20)
-
 
 hit = Image.new("RGB", (16, 16))  # Can be larger than matrix if wanted!!
 draw = ImageDraw.Draw(hit)  # Declare Draw instance before prims
@@ -40,12 +41,11 @@ matrix = RGBMatrix(options = options)
 offset_canvas = matrix.CreateFrameCanvas()
 
 states = [random.choice([miss, hit, unknown]) for _ in range(options.chain_length * 2)]
+matrix.Clear()
 while True:
-    for n in range(-16, 128):  # Start off top-left, move off bottom-right
-        matrix.Clear()
-        for i, state, in enumerate(states):
-            matrix.SetImage(state, 16 * i, 0)
-        time.sleep(1)    
+    for i, state, in enumerate(states):
+        offset_canvas.SetImage(state, 16 * i, 0)
+        offset_canvas.SetImage(state, 16 * i, 16)
 
     offset_canvas = matrix.SwapOnVSync(offset_canvas)
-
+    time.sleep(1)
