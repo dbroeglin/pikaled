@@ -16,6 +16,16 @@ class SimulationCanvas:
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
     def transform(self, x, y):
+        """
+        Transforms the coordinates (x, y) to simulate the LED matrix physical layout.
+
+        Args:
+            x (int): The x-coordinate to transform.
+            y (int): The y-coordinate to transform.
+
+        Returns:
+            tuple: The transformed coordinates (new_x, new_y).
+        """
         if y < 16:
             if x < 64:
                 return 63 - x, 47 - y
@@ -23,13 +33,17 @@ class SimulationCanvas:
                 return x - 64, 16 + y
             elif x < 192:
                 return 63 - (x - 128), 15 - y
+            else:
+                raise ValueError("Invalid x-coordinate: {}".format(x))
         elif y < 32:
             if x < 64:
                 return 63 - x, 63 - (y - 16)
             elif x < 128:
-                return x - 64, 63 + (y - 16)
+                return x - 64, 64 + (y - 16)
             elif x < 192:
                 return 63 - (x - 128), 95 - (y - 16)
+            else:
+                raise ValueError("Invalid x-coordinate: {}".format(x))
         elif y < 48:
             if x < 64:
                 return 63 - x, 111 - (y - 32)
@@ -37,8 +51,10 @@ class SimulationCanvas:
                 return x - 64, 112 + (y - 32)
             elif x < 192:
                 return 63 - (x - 128), 143 - (y - 32)
+            else:
+                raise ValueError("Invalid x-coordinate: {}".format(x))
         else:
-            return x, y
+            raise ValueError("Invalid y-coordinate: {}".format(y))
     
     def SetImage(self, image, x, y): 
         for ix in range(image.width):
