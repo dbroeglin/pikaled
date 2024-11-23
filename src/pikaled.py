@@ -1,9 +1,37 @@
 import os
 import sys
+import pygame
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 
+from pydantic import BaseModel, ValidationError
+import httpx
+
+class Taikai(BaseModel):
+    name: str
+
+class Result(BaseModel):
+    status: str | None = None
+    value: int | None = None
+    final: bool    
+
+class Score(BaseModel):
+    results: list[Result]
+
+class Participant(BaseModel):
+    name: str
+    score: Score
+
+class Tachi(BaseModel):
+    index: int
+    round: int
+    participants: list[Participant]
+
+class Scoreboard(BaseModel):
+    taikai: Taikai
+    tachi: Tachi | None = None
+
 class PikaLed:
-    def __init__(self):
+    def __init__(self, url = None, canvas = None):
         font_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Roboto-Black.ttf")
         font = ImageFont.truetype(font_filename, 19)
 
@@ -24,6 +52,25 @@ class PikaLed:
         self.unknown = Image.new("RGB", (16, 16))  # Can be larger than matrix if wanted!!
         draw = ImageDraw.Draw(self.unknown)  # Declare Draw instance before prims
         draw.text((8, 8), "?", font=font, anchor="mm", features=["-kern"])
+        self.url = url
+        self.canvas = canvas
+
+    def update(self):
+        for (line_nb, participant) in enumerate(self.get_scoreboard().tachi.participants):
+            for (index, result) in enumerate(participant.score.results):
+                if result.status:
+                    self.display_result(self.canvas, result.status, line_nb, index) 
+        self.canvas.update()        
+
+    def get_scoreboard(self):
+            response = httpx.get(self.url)
+            response.raise_for_status()
+            try:
+                return Scoreboard.model_validate(response.json())
+            except ValidationError as err:
+                print(err)
+                exit(1)
+
 
     def get_image(self, result):
         if result == "hit":
@@ -61,3 +108,74 @@ class PikaLed:
             canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 32)
         else:            
             raise ValueError("Invalid participant number: {}".format(participant_nb))
+        
+
+class SimulationCanvas:
+    def __init__(self):
+        self.grid_width, self.grid_height = 2 * 32, 9 * 16
+        self.led_width, self.led_height = 5, 5
+        self.screen_width, self.screen_height = self.grid_width * self.led_width, self.grid_height * self.led_height
+        self.border_size = 2
+
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+
+    def transform(self, x, y):
+        """
+        Transforms the coordinates (x, y) to simulate the LED matrix physical layout.
+
+        Args:
+            x (int): The x-coordinate to transform.
+            y (int): The y-coordinate to transform.
+
+        Returns:
+            tuple: The transformed coordinates (new_x, new_y).
+        """
+        if y < 16:
+            if x < 64:
+                return 63 - x, 47 - y
+            elif x < 128:
+                return x - 64, 16 + y
+            elif x < 192:
+                return 63 - (x - 128), 15 - y
+            else:
+                raise ValueError("Invalid x-coordinate: {}".format(x))
+        elif y < 32:
+            if x < 64:
+                return 63 - x, 63 - (y - 16)
+            elif x < 128:
+                return x - 64, 64 + (y - 16)
+            elif x < 192:
+                return 63 - (x - 128), 95 - (y - 16)
+            else:
+                raise ValueError("Invalid x-coordinate: {}".format(x))
+        elif y < 48:
+            if x < 64:
+                return 63 - x, 111 - (y - 32)
+            elif x < 128:
+                return x - 64, 112 + (y - 32)
+            elif x < 192:
+                return 63 - (x - 128), 143 - (y - 32)
+            else:
+                raise ValueError("Invalid x-coordinate: {}".format(x))
+        else:
+            raise ValueError("Invalid y-coordinate: {}".format(y))
+    
+    def SetImage(self, image, x, y): 
+        for ix in range(image.width):
+            for iy in range(image.height):
+                nx, ny = self.transform(x + ix, y + iy)
+                pygame.draw.rect(
+                    self.screen,
+                    image.getpixel((ix, iy)),
+                    (
+                        nx * self.led_width,
+                        ny * self.led_height,
+                        self.led_width - self.border_size,
+                        self.led_height - self.border_size,
+                    ),
+                )
+
+    def update(self):
+        pygame.display.flip()
+
