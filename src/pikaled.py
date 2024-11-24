@@ -107,11 +107,11 @@ class PikaLed:
         print("Participant {} arrow {} result: {}".format(participant_nb, arrow_nb, result))
         img = self.get_image(result)
         if participant_nb == 0:
-            canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 0)
+            canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 32)
         elif participant_nb == 1:
-            canvas.SetImage(img,  (4 + arrow_nb) * 16, 0)
+            canvas.SetImage(img,  (4 + arrow_nb) * 16, 32)
         elif participant_nb == 2:
-            canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 0)
+            canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 32)
         elif participant_nb == 3:
             canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 16)
         elif participant_nb == 4:
@@ -119,11 +119,11 @@ class PikaLed:
         elif participant_nb == 5:
             canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 16)
         elif participant_nb == 6:
-            canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 32)
+            canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 0)
         elif participant_nb == 7:
-            canvas.SetImage(img,  (4 + arrow_nb) * 16, 32)
+            canvas.SetImage(img,  (4 + arrow_nb) * 16, 0)
         elif participant_nb == 8:
-            canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 32)
+            canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 0)
         else:            
             raise ValueError("Invalid participant number: {}".format(participant_nb))
         
