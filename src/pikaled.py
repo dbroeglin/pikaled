@@ -37,7 +37,7 @@ class PikaLed:
         self.matrix = matrix
 
         font_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Roboto-Black.ttf")
-        font = ImageFont.truetype(os.open(font_filename, 'r'), 19)
+        font = ImageFont.truetype('Roboto-Black.ttf', 19)
         
         black=(0,0,0)
         gray=(100,100,100)

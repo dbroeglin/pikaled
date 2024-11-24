@@ -24,7 +24,7 @@ matrix = RGBMatrix(options = options)
 offset_canvas = matrix.CreateFrameCanvas()
 
 matrix.Clear()
-pikaled = PikaLed(canvas=offset_canvas, url='http://localhost:3000/scoreboard/dummy.json')
+pikaled = PikaLed(canvas=offset_canvas, url='http://localhost:3000/scoreboard/dummy.json', matrix=matrix)
 
 while True:
     pikaled.update()
