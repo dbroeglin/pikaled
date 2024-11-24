@@ -16,8 +16,7 @@ options.rows = 16
 options.cols = 32
 options.chain_length = 6
 options.gpio_slowdown = 3
-options.parallel = 2
-#options.hardware_mapping = 'adafruit-hat'  # If you have an Adafruit HAT: 'adafruit-hat'
+options.parallel = 3
 options.multiplexing = 4
 
 matrix = RGBMatrix(options = options)
