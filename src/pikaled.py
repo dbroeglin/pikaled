@@ -32,6 +32,9 @@ class Scoreboard(BaseModel):
 
 class PikaLed:
     def __init__(self, url = None, canvas = None):
+        self.url = url
+        self.canvas = canvas
+
         font_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Roboto-Black.ttf")
         font = ImageFont.truetype(font_filename, 19)
 
@@ -43,22 +46,27 @@ class PikaLed:
         draw = ImageDraw.Draw(self.hit)
         draw.ellipse([(1,1), (14, 14)], fill=(0,0,0), outline=white, width=3)
 
-        self.miss = Image.new("RGB", (16, 16))  # Can be larger than matrix if wanted!!
-        draw = ImageDraw.Draw(self.miss)  # Declare Draw instance before prims
+        self.miss = Image.new("RGB", (16, 16))
+        draw = ImageDraw.Draw(self.miss)
         draw.line([(0, 0), (14, 14)], fill=white, width=3)
         draw.line([(0, 15), (15, 0)], fill=white, width=3)
         draw.rectangle([(0, 0), (15, 15)], fill=None, outline=black, width=1)
 
-        self.unknown = Image.new("RGB", (16, 16))  # Can be larger than matrix if wanted!!
-        draw = ImageDraw.Draw(self.unknown)  # Declare Draw instance before prims
+        self.unknown = Image.new("RGB", (16, 16))
+        draw = ImageDraw.Draw(self.unknown)
         draw.text((8, 8), "?", font=font, anchor="mm", features=["-kern"])
-        self.url = url
-        self.canvas = canvas
+
+        self.blank = Image.new("RGB", (16, 16))
+        draw = ImageDraw.Draw(self.blank)
+        draw.rectangle([(0, 0), (15, 15)], fill=black, outline=black, width=1)
 
     def update(self):
-        for (line_nb, participant) in enumerate(self.get_scoreboard().tachi.participants):
-            for (index, result) in enumerate(participant.score.results):
-                if result.status:
+        scoreboard = self.get_scoreboard()
+        if scoreboard.tachi is None or scoreboard.tachi.participants is None:
+            self.blank_scoreboard()
+        else:
+            for (line_nb, participant) in enumerate(scoreboard.tachi.participants):
+                for (index, result) in enumerate(participant.score.results):
                     self.display_result(self.canvas, result.status, line_nb, index) 
         self.canvas.update()        
 
@@ -71,8 +79,14 @@ class PikaLed:
                 print(err)
                 exit(1)
 
+    def blank_scoreboard(self):
+        for line_nb in range(9):
+            for index in range(4):
+                self.display_result(self.canvas, None, line_nb, index)
 
     def get_image(self, result):
+        if result is None:
+            return self.blank
         if result == "hit":
             return self.hit
         elif result == "miss":
