@@ -24,9 +24,8 @@ matrix = RGBMatrix(options = options)
 offset_canvas = matrix.CreateFrameCanvas()
 
 matrix.Clear()
-pikaled = PikaLed()
+pikaled = PikaLed(canvas=offset_canvas, url='http://localhost:3000/scoreboard/dummy.json')
 
 while True:
     pikaled.update()
-    offset_canvas = matrix.SwapOnVSync(offset_canvas)
     time.sleep(1)

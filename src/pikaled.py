@@ -31,13 +31,14 @@ class Scoreboard(BaseModel):
     tachi: Tachi | None = None
 
 class PikaLed:
-    def __init__(self, url = None, canvas = None):
+    def __init__(self, url = None, canvas = None, matrix = None):
         self.url = url
         self.canvas = canvas
+        self.matrix = matrix
 
         font_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Roboto-Black.ttf")
-        font = ImageFont.truetype(font_filename, 19)
-
+        font = ImageFont.truetype(os.open(font_filename, 'r'), 19)
+        
         black=(0,0,0)
         gray=(100,100,100)
         white=(255,255,255)
@@ -67,8 +68,11 @@ class PikaLed:
         else:
             for (line_nb, participant) in enumerate(scoreboard.tachi.participants):
                 for (index, result) in enumerate(participant.score.results):
-                    self.display_result(self.canvas, result.status, line_nb, index) 
-        self.canvas.update()        
+                    self.display_result(self.canvas, result.status, line_nb, index)
+        if isinstance(self.canvas, SimulationCanvas):
+            self.canvas.update()
+        else:
+            self.canvas = self.matrix.SwapOnVSync(self.canvas)
 
     def get_scoreboard(self):
             response = httpx.get(self.url)
