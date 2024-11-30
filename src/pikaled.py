@@ -116,11 +116,11 @@ class PikaLed:
         elif participant_nb == 2:
             canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 32)
         elif participant_nb == 3:
-            canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 16)
+            canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 16)
         elif participant_nb == 4:
             canvas.SetImage(img,  (4 + arrow_nb) * 16, 16)
         elif participant_nb == 5:
-            canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 16)
+            canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 16)
         elif participant_nb == 6:
             canvas.SetImage(self.rotate_image(img),  (8 + (3 - arrow_nb)) * 16, 0)
         elif participant_nb == 7:
