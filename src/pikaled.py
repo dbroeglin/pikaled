@@ -63,7 +63,7 @@ class PikaLed:
 
     def update(self):
         scoreboard = self.get_scoreboard()
-        if scoreboard.tachi is None or scoreboard.tachi.participants is None:
+        if scoreboard is None or scoreboard.tachi is None or scoreboard.tachi.participants is None:
             self.blank_scoreboard()
         else:
             for (line_nb, participant) in enumerate(scoreboard.tachi.participants):
@@ -75,6 +75,7 @@ class PikaLed:
             self.canvas = self.matrix.SwapOnVSync(self.canvas)
 
     def get_scoreboard(self):
+        try:
             response = httpx.get(self.url)
             response.raise_for_status()
             try:
@@ -82,6 +83,9 @@ class PikaLed:
             except ValidationError as err:
                 print(err)
                 exit(1)
+        except httpx.HTTPError as err:
+            print(f"Error fetching scoreboard: {err}")
+            return None
 
     def blank_scoreboard(self):
         for line_nb in range(9):
@@ -104,7 +108,6 @@ class PikaLed:
         return ImageOps.flip(ImageOps.mirror(image))
 
     def display_result(self, canvas, result, participant_nb, arrow_nb):
-        print("Participant {} arrow {} result: {}".format(participant_nb, arrow_nb, result))
         img = self.get_image(result)
         if participant_nb == 0:
             canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 32)
