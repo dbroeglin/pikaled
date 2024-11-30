@@ -10,6 +10,8 @@ from PIL import Image, ImageDraw, ImageFont
 from pikaled import PikaLed
 
 
+import os
+
 # Configuration for the matrix
 options = RGBMatrixOptions()
 options.rows = 16
@@ -23,7 +25,9 @@ matrix = RGBMatrix(options = options)
 offset_canvas = matrix.CreateFrameCanvas()
 
 matrix.Clear()
-pikaled = PikaLed(canvas=offset_canvas, url='http://localhost:3000/scoreboard/dummy.json', matrix=matrix)
+
+url = os.getenv('PIKAICHU_URL') or 'http://localhost:3000/scoreboard/dummy.json'
+pikaled = PikaLed(canvas=offset_canvas, url=url, matrix=matrix)
 
 while True:
     pikaled.update()
