@@ -17,7 +17,7 @@ options = RGBMatrixOptions()
 options.rows = 16
 options.cols = 32
 options.chain_length = 6
-options.gpio_slowdown = 3
+options.gpio_slowdown = 5 # on Raspberry Pi 4
 options.parallel = 3
 options.multiplexing = 4
 
@@ -27,7 +27,7 @@ offset_canvas = matrix.CreateFrameCanvas()
 matrix.Clear()
 
 url = os.getenv('PIKAICHU_URL') or 'http://localhost:3000/scoreboard/dummy.json'
-pikaled = PikaLed(canvas=offset_canvas, url=url, matrix=matri, tachi_size=9)
+pikaled = PikaLed(canvas=offset_canvas, url=url, matrix=matrix, tachi_size=9)
 
 while True:
     pikaled.update()

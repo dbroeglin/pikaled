@@ -69,7 +69,7 @@ class PikaLed:
         else:
             for (line_nb, participant) in enumerate(scoreboard.tachi.participants):
                 for (index, result) in enumerate(participant.score.results):
-                    self.display_result(self.canvas, result.status, line_nb, index)
+                    self.display_result(self.canvas, result, line_nb, index)
             for line_nb in range(len(scoreboard.tachi.participants), self.tachi_size):
                 for index in range(4):
                     self.display_result(self.canvas, None, line_nb, index)
@@ -96,23 +96,26 @@ class PikaLed:
             for index in range(4):
                 self.display_result(self.canvas, None, line_nb, index)
 
-    def get_image(self, result):
-        if result is None:
+    def get_image(self, status):
+        if status is None:
             return self.blank
-        if result == "hit":
+        if status == "hit":
             return self.hit
-        elif result == "miss":
+        elif status == "miss":
             return self.miss
-        elif result == "unknown":
+        elif status == "unknown":
             return self.unknown
         else:
-            raise ValueError("Invalid result: {}".format(result))
+            raise ValueError("Invalid result status: {}".format(status))
 
     def rotate_image(self, image):
         return ImageOps.flip(ImageOps.mirror(image))
 
     def display_result(self, canvas, result, participant_nb, arrow_nb):
-        img = self.get_image(result)
+        if result is None:
+            img = self.get_image(None)
+        else:
+            img = self.get_image(result.status)
         if participant_nb == 0:
             canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 32)
         elif participant_nb == 1:
@@ -158,31 +161,31 @@ class SimulationCanvas:
             transformed to the position on the screen that corresponds to the physical
             layout of the LED matrix.
         """
-        if y < 16:
+        if y < 16: # chain 1
             if x < 64:
-                return 63 - x, 111 - (y - 32)
+                return 63 - x, 143 - y
             elif x < 128:
-                return x - 64, 112 + (y - 32)
+                return x - 64, 111 + y
             elif x < 192:
-                return 63 - (x - 128), 143 - (y - 32)
+                return 63 - (x - 128), 111 - y
             else:
                 raise ValueError("Invalid x-coordinate: {}".format(x))
-        elif y < 32:
+        elif y < 32: # chain 2
             if x < 64:
-                return 63 - x, 63 - (y - 16)
+                return 63 - x, 95 - (y - 16)
             elif x < 128:
                 return x - 64, 64 + (y - 16)
             elif x < 192:
-                return 63 - (x - 128), 95 - (y - 16)
+                return 63 - (x - 128), 63 - (y - 16)
             else:
                 raise ValueError("Invalid x-coordinate: {}".format(x))
-        elif y < 48:
+        elif y < 48: # chain 3  
             if x < 64:
-                return 63 - x, 47 - y
+                return 63 - x, 15 - (y - 32)
             elif x < 128:
-                return x - 64, 16 + y
+                return x - 64, 16 + (y - 32)
             elif x < 192:
-                return 63 - (x - 128), 15 - y
+                return 63 - (x - 128), 47 - (y - 32)
             else:
                 raise ValueError("Invalid x-coordinate: {}".format(x))
         else:
