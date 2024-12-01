@@ -27,7 +27,7 @@ offset_canvas = matrix.CreateFrameCanvas()
 matrix.Clear()
 
 url = os.getenv('PIKAICHU_URL') or 'http://localhost:3000/scoreboard/dummy.json'
-pikaled = PikaLed(canvas=offset_canvas, url=url, matrix=matrix)
+pikaled = PikaLed(canvas=offset_canvas, url=url, matrix=matri, tachi_size=9)
 
 while True:
     pikaled.update()

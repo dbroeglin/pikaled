@@ -31,10 +31,11 @@ class Scoreboard(BaseModel):
     tachi: Tachi | None = None
 
 class PikaLed:
-    def __init__(self, url = None, canvas = None, matrix = None):
+    def __init__(self, url = None, canvas = None, matrix = None, tachi_size = 9):
         self.url = url
         self.canvas = canvas
         self.matrix = matrix
+        self.tachi_size = tachi_size
 
         font_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Roboto-Black.ttf")
         font = ImageFont.truetype('Roboto-Black.ttf', 19)
@@ -69,6 +70,9 @@ class PikaLed:
             for (line_nb, participant) in enumerate(scoreboard.tachi.participants):
                 for (index, result) in enumerate(participant.score.results):
                     self.display_result(self.canvas, result.status, line_nb, index)
+            for line_nb in range(len(scoreboard.tachi.participants), self.tachi_size):
+                for index in range(4):
+                    self.display_result(self.canvas, None, line_nb, index)
         if isinstance(self.canvas, SimulationCanvas):
             self.canvas.update()
         else:
@@ -150,15 +154,17 @@ class SimulationCanvas:
             y (int): The y-coordinate to transform.
 
         Returns:
-            tuple: The transformed coordinates (new_x, new_y).
+            tuple: The transformed coordinates (new_x, new_y). The new coordinates are 
+            transformed to the position on the screen that corresponds to the physical
+            layout of the LED matrix.
         """
         if y < 16:
             if x < 64:
-                return 63 - x, 47 - y
+                return 63 - x, 111 - (y - 32)
             elif x < 128:
-                return x - 64, 16 + y
+                return x - 64, 112 + (y - 32)
             elif x < 192:
-                return 63 - (x - 128), 15 - y
+                return 63 - (x - 128), 143 - (y - 32)
             else:
                 raise ValueError("Invalid x-coordinate: {}".format(x))
         elif y < 32:
@@ -172,11 +178,11 @@ class SimulationCanvas:
                 raise ValueError("Invalid x-coordinate: {}".format(x))
         elif y < 48:
             if x < 64:
-                return 63 - x, 111 - (y - 32)
+                return 63 - x, 47 - y
             elif x < 128:
-                return x - 64, 112 + (y - 32)
+                return x - 64, 16 + y
             elif x < 192:
-                return 63 - (x - 128), 143 - (y - 32)
+                return 63 - (x - 128), 15 - y
             else:
                 raise ValueError("Invalid x-coordinate: {}".format(x))
         else:
