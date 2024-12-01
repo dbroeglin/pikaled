@@ -36,31 +36,42 @@ class PikaLed:
         self.canvas = canvas
         self.matrix = matrix
         self.tachi_size = tachi_size
-
-        font_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Roboto-Black.ttf")
-        font = ImageFont.truetype('Roboto-Black.ttf', 19)
         
-        black=(0,0,0)
-        gray=(100,100,100)
-        white=(255,255,255)
+        intermediate_color=(255,255,255)
+        final_color=(255,255,255)
 
-        self.hit = Image.new("RGB", (16, 16))
-        draw = ImageDraw.Draw(self.hit)
-        draw.ellipse([(1,1), (14, 14)], fill=(0,0,0), outline=white, width=3)
+        self.miss = self.draw_miss(intermediate_color)
+        self.final_miss = self.draw_miss(final_color, background_color=(100,0,0))
+        self.hit = self.draw_hit(intermediate_color)
+        self.final_hit = self.draw_hit(final_color, background_color=(100,0,0))
+        self.unknown = self.draw_unknown(intermediate_color)
+        self.blank = self.draw_blank()
 
-        self.miss = Image.new("RGB", (16, 16))
-        draw = ImageDraw.Draw(self.miss)
-        draw.line([(0, 0), (14, 14)], fill=white, width=3)
-        draw.line([(0, 15), (15, 0)], fill=white, width=3)
-        draw.rectangle([(0, 0), (15, 15)], fill=None, outline=black, width=1)
+    def draw_blank(self):
+        blank = Image.new("RGB", (16, 16))
+        draw = ImageDraw.Draw(blank)
+        draw.rectangle([(0, 0), (15, 15)], fill=(0,0,0), outline=(0,0,0), width=1)
+        return blank
 
-        self.unknown = Image.new("RGB", (16, 16))
-        draw = ImageDraw.Draw(self.unknown)
-        draw.text((8, 8), "?", font=font, anchor="mm", features=["-kern"])
+    def draw_hit(self, color, background_color=(0,0,0)):
+        hit = Image.new("RGB", (16, 16), color=background_color)
+        draw = ImageDraw.Draw(hit)
+        draw.ellipse([(1,1), (14, 14)], fill=background_color, outline=color, width=3)
+        return hit
 
-        self.blank = Image.new("RGB", (16, 16))
-        draw = ImageDraw.Draw(self.blank)
-        draw.rectangle([(0, 0), (15, 15)], fill=black, outline=black, width=1)
+    def draw_miss(self, color, background_color=(0,0,0)):
+        miss = Image.new("RGB", (16, 16), color=background_color)
+        draw = ImageDraw.Draw(miss)
+        draw.line([(0, 0), (14, 14)], fill=color, width=3)
+        draw.line([(0, 15), (15, 0)], fill=color, width=3)
+        draw.rectangle([(0, 0), (15, 15)], fill=None, outline=background_color, width=1)
+        return miss
+
+    def draw_unknown(self, color):
+        font = ImageFont.truetype('Roboto-Black.ttf', 19)
+        unknown = Image.new("RGB", (16, 16))
+        draw = ImageDraw.Draw(unknown)
+        draw.text((8, 8), "?", font=font, anchor="mm", features=["-kern"], color=color)        
 
     def update(self):
         scoreboard = self.get_scoreboard()
@@ -92,18 +103,24 @@ class PikaLed:
             return None
 
     def blank_scoreboard(self):
-        for line_nb in range(9):
+        for line_nb in range(self.tachi_size):
             for index in range(4):
                 self.display_result(self.canvas, None, line_nb, index)
 
-    def get_image(self, status):
-        if status is None:
+    def get_image(self, result):
+        if result.status is None:
             return self.blank
-        if status == "hit":
-            return self.hit
-        elif status == "miss":
-            return self.miss
-        elif status == "unknown":
+        if result.status == "hit":
+            if result.final:
+                return self.final_hit
+            else:
+                return self.hit
+        elif result.status == "miss":
+            if result.final:
+                return self.final_miss
+            else:
+                return self.miss
+        elif result.status == "unknown":
             return self.unknown
         else:
             raise ValueError("Invalid result status: {}".format(status))
@@ -115,7 +132,7 @@ class PikaLed:
         if result is None:
             img = self.get_image(None)
         else:
-            img = self.get_image(result.status)
+            img = self.get_image(result)
         if participant_nb == 0:
             canvas.SetImage(self.rotate_image(img), (3 - arrow_nb) * 16, 32)
         elif participant_nb == 1:
@@ -165,7 +182,7 @@ class SimulationCanvas:
             if x < 64:
                 return 63 - x, 143 - y
             elif x < 128:
-                return x - 64, 111 + y
+                return x - 64, 112 + y
             elif x < 192:
                 return 63 - (x - 128), 111 - y
             else:
