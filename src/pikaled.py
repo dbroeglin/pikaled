@@ -130,7 +130,7 @@ class PikaLed:
 
     def display_result(self, canvas, result, participant_nb, arrow_nb):
         if result is None:
-            img = self.get_image(None)
+            img = self.blank
         else:
             img = self.get_image(result)
         if participant_nb == 0:
